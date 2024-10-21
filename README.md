@@ -9,11 +9,13 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.springframework.http.HttpHeaders;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.client.RestClient;
 
 import java.util.Collections;
 
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -24,12 +26,6 @@ class AccountValidationServiceTest {
 
     @Mock
     private OktaClient oktaClient;
-
-    @Mock
-    private RestClient.RequestHeadersUriSpec<?> requestHeadersUriSpec;
-
-    @Mock
-    private RestClient.ResponseSpec responseSpec;
 
     private AccountValidationService accountValidationService;
 
@@ -73,12 +69,8 @@ class AccountValidationServiceTest {
         accountRole.setAccountRole(Collections.singletonList(role));
 
         when(oktaClient.getToken(anyString(), anyString())).thenReturn(token);
-        when(restClient.get()).thenReturn(requestHeadersUriSpec);
-        when(requestHeadersUriSpec.uri(anyString())).thenReturn(requestHeadersUriSpec);
-        when(requestHeadersUriSpec.header(anyString(), anyString())).thenReturn(requestHeadersUriSpec);
-        when(requestHeadersUriSpec.retrieve()).thenReturn(responseSpec);
-        when(responseSpec.body(Party.class)).thenReturn(party);
-        when(responseSpec.body(AccountRole.class)).thenReturn(accountRole);
+        when(restClient.get(anyString(), eq(HttpHeaders.AUTHORIZATION), anyString(), eq(Party.class))).thenReturn(party);
+        when(restClient.get(anyString(), eq(HttpHeaders.AUTHORIZATION), anyString(), eq(AccountRole.class))).thenReturn(accountRole);
 
         // Act
         boolean result = accountValidationService.validateAccount(uuid, acctId, ecifId);
@@ -86,7 +78,7 @@ class AccountValidationServiceTest {
         // Assert
         assertTrue(result);
         verify(oktaClient).getToken("partyClient", "party.read");
-        verify(restClient, times(2)).get();
+        verify(restClient, times(2)).get(anyString(), eq(HttpHeaders.AUTHORIZATION), anyString(), any());
     }
 
     @Test
@@ -98,11 +90,7 @@ class AccountValidationServiceTest {
         AccountDetails expectedDetails = new AccountDetails();
 
         when(oktaClient.getToken(anyString(), anyString())).thenReturn(token);
-        when(restClient.get()).thenReturn(requestHeadersUriSpec);
-        when(requestHeadersUriSpec.uri(anyString())).thenReturn(requestHeadersUriSpec);
-        when(requestHeadersUriSpec.header(anyString(), anyString())).thenReturn(requestHeadersUriSpec);
-        when(requestHeadersUriSpec.retrieve()).thenReturn(responseSpec);
-        when(responseSpec.body(AccountDetails.class)).thenReturn(expectedDetails);
+        when(restClient.get(anyString(), eq(HttpHeaders.AUTHORIZATION), anyString(), eq(AccountDetails.class))).thenReturn(expectedDetails);
 
         // Act
         AccountDetails result = accountValidationService.getAccountDetails(acctId, affiliate);
@@ -111,7 +99,7 @@ class AccountValidationServiceTest {
         assertNotNull(result);
         assertEquals(expectedDetails, result);
         verify(oktaClient).getToken("accountClient", "limited.accts.b2c.read");
-        verify(restClient).get();
+        verify(restClient).get(anyString(), eq(HttpHeaders.AUTHORIZATION), anyString(), eq(AccountDetails.class));
     }
 }
 ```

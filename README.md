@@ -12,6 +12,8 @@ import org.mockito.MockitoAnnotations;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.client.RestClient;
 
+import java.util.Collections;
+
 import static org.mockito.Mockito.*;
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -61,10 +63,14 @@ class AccountValidationServiceTest {
         party.getParty().setPartyDomainId("test-domain-id");
 
         AccountRole accountRole = new AccountRole();
+        accountRole.setAccountId(acctId);
         AccountRole.Role role = new AccountRole.Role();
-        role.setParty(new AccountRole.Party());
-        role.getParty().setPartyDomainId("test-domain-id");
-        accountRole.getAccountRole().add(role);
+        role.setAccountRoleType("PRIMARY");
+        role.setAccountRoleName("OWNER");
+        Party.PartyDetails partyDetails = new Party.PartyDetails();
+        partyDetails.setPartyDomainId("test-domain-id");
+        role.setParty(partyDetails);
+        accountRole.setAccountRole(Collections.singletonList(role));
 
         when(oktaClient.getToken(anyString(), anyString())).thenReturn(token);
         when(restClient.get()).thenReturn(requestHeadersUriSpec);

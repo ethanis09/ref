@@ -27,6 +27,12 @@ class AccountValidationServiceTest {
     @Mock
     private OktaClient oktaClient;
 
+    @Mock
+    private RestClient.RequestHeadersSpec<?> requestHeadersSpec;
+
+    @Mock
+    private RestClient.ResponseSpec responseSpec;
+
     private AccountValidationService accountValidationService;
 
     @BeforeEach
@@ -69,8 +75,12 @@ class AccountValidationServiceTest {
         accountRole.setAccountRole(Collections.singletonList(role));
 
         when(oktaClient.getToken(anyString(), anyString())).thenReturn(token);
-        when(restClient.get(anyString(), eq(HttpHeaders.AUTHORIZATION), anyString(), eq(Party.class))).thenReturn(party);
-        when(restClient.get(anyString(), eq(HttpHeaders.AUTHORIZATION), anyString(), eq(AccountRole.class))).thenReturn(accountRole);
+        when(restClient.get()).thenReturn(requestHeadersSpec);
+        when(requestHeadersSpec.uri(anyString())).thenReturn(requestHeadersSpec);
+        when(requestHeadersSpec.header(eq(HttpHeaders.AUTHORIZATION), anyString())).thenReturn(requestHeadersSpec);
+        when(requestHeadersSpec.retrieve()).thenReturn(responseSpec);
+        when(responseSpec.body(Party.class)).thenReturn(party);
+        when(responseSpec.body(AccountRole.class)).thenReturn(accountRole);
 
         // Act
         boolean result = accountValidationService.validateAccount(uuid, acctId, ecifId);
@@ -78,7 +88,7 @@ class AccountValidationServiceTest {
         // Assert
         assertTrue(result);
         verify(oktaClient).getToken("partyClient", "party.read");
-        verify(restClient, times(2)).get(anyString(), eq(HttpHeaders.AUTHORIZATION), anyString(), any());
+        verify(restClient, times(2)).get();
     }
 
     @Test
@@ -90,7 +100,11 @@ class AccountValidationServiceTest {
         AccountDetails expectedDetails = new AccountDetails();
 
         when(oktaClient.getToken(anyString(), anyString())).thenReturn(token);
-        when(restClient.get(anyString(), eq(HttpHeaders.AUTHORIZATION), anyString(), eq(AccountDetails.class))).thenReturn(expectedDetails);
+        when(restClient.get()).thenReturn(requestHeadersSpec);
+        when(requestHeadersSpec.uri(anyString())).thenReturn(requestHeadersSpec);
+        when(requestHeadersSpec.header(eq(HttpHeaders.AUTHORIZATION), anyString())).thenReturn(requestHeadersSpec);
+        when(requestHeadersSpec.retrieve()).thenReturn(responseSpec);
+        when(responseSpec.body(AccountDetails.class)).thenReturn(expectedDetails);
 
         // Act
         AccountDetails result = accountValidationService.getAccountDetails(acctId, affiliate);
@@ -99,7 +113,7 @@ class AccountValidationServiceTest {
         assertNotNull(result);
         assertEquals(expectedDetails, result);
         verify(oktaClient).getToken("accountClient", "limited.accts.b2c.read");
-        verify(restClient).get(anyString(), eq(HttpHeaders.AUTHORIZATION), anyString(), eq(AccountDetails.class));
+        verify(restClient).get();
     }
 }
 ```

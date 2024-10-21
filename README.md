@@ -28,7 +28,7 @@ class AccountValidationServiceTest {
     private OktaClient oktaClient;
 
     @Mock
-    private RestClient.RequestHeadersSpec<?> requestHeadersSpec;
+    private RestClient.RequestBodySpec requestBodySpec;
 
     @Mock
     private RestClient.ResponseSpec responseSpec;
@@ -75,10 +75,9 @@ class AccountValidationServiceTest {
         accountRole.setAccountRole(Collections.singletonList(role));
 
         when(oktaClient.getToken(anyString(), anyString())).thenReturn(token);
-        when(restClient.get()).thenReturn(requestHeadersSpec);
-        when(requestHeadersSpec.uri(anyString())).thenReturn(requestHeadersSpec);
-        when(requestHeadersSpec.header(eq(HttpHeaders.AUTHORIZATION), anyString())).thenReturn(requestHeadersSpec);
-        when(requestHeadersSpec.retrieve()).thenReturn(responseSpec);
+        when(restClient.get()).thenReturn(requestBodySpec);
+        when(requestBodySpec.header(eq(HttpHeaders.AUTHORIZATION), anyString())).thenReturn(requestBodySpec);
+        when(requestBodySpec.retrieve()).thenReturn(responseSpec);
         when(responseSpec.body(Party.class)).thenReturn(party);
         when(responseSpec.body(AccountRole.class)).thenReturn(accountRole);
 
@@ -100,10 +99,9 @@ class AccountValidationServiceTest {
         AccountDetails expectedDetails = new AccountDetails();
 
         when(oktaClient.getToken(anyString(), anyString())).thenReturn(token);
-        when(restClient.get()).thenReturn(requestHeadersSpec);
-        when(requestHeadersSpec.uri(anyString())).thenReturn(requestHeadersSpec);
-        when(requestHeadersSpec.header(eq(HttpHeaders.AUTHORIZATION), anyString())).thenReturn(requestHeadersSpec);
-        when(requestHeadersSpec.retrieve()).thenReturn(responseSpec);
+        when(restClient.get()).thenReturn(requestBodySpec);
+        when(requestBodySpec.header(eq(HttpHeaders.AUTHORIZATION), anyString())).thenReturn(requestBodySpec);
+        when(requestBodySpec.retrieve()).thenReturn(responseSpec);
         when(responseSpec.body(AccountDetails.class)).thenReturn(expectedDetails);
 
         // Act
